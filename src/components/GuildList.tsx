@@ -3,7 +3,6 @@ import type { MouseEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
-import type { Guild } from '../@types';
 
 async function fetchGuilds(): Promise<Guild[]> {
   const res = await api.get<Guild[]>('/guilds');
