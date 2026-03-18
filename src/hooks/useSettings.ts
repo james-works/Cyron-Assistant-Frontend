@@ -119,9 +119,30 @@ export const useSettings = (): UseSettingsResult => {
   const {
     data: usage,
     isLoading: usageLoading,
+    isError: usageError,
   } = useQuery({
     queryKey: ['usage', guildId],
     queryFn: () => guildService.fetchUsage(guildId!),
+    enabled: !!guildId && view === 'usage',
+  });
+
+  const {
+    data: usageHistory,
+    isLoading: historyLoading,
+    isError: historyError,
+  } = useQuery({
+    queryKey: ['usage-history', guildId],
+    queryFn: () => guildService.fetchUsageHistory(guildId!, 7),
+    enabled: !!guildId && view === 'usage',
+  });
+
+  const {
+    data: usageLogs,
+    isLoading: logsLoading,
+    isError: logsError,
+  } = useQuery({
+    queryKey: ['usage-logs', guildId],
+    queryFn: () => guildService.fetchUsageLogs(guildId!, 10),
     enabled: !!guildId && view === 'usage',
   });
 
@@ -279,8 +300,21 @@ export const useSettings = (): UseSettingsResult => {
   const isProOrBusiness =
     !!guild && ['pro', 'business'].includes((guild.plan ?? 'free').toLowerCase());
 
-  const chartData = usage ? mockDailyTokenData(usage.monthly_tokens_used) : [];
-  const recentActivity = mockRecentActivity();
+  const chartData =
+    usageHistory?.map((row: { date: string; tokens_used: number }) => ({
+      date: row.date,
+      tokens: row.tokens_used,
+    })) ?? [];
+
+  const recentActivity =
+    usageLogs?.map(
+      (row: { timestamp: string; tokens_used: number; low_confidence: boolean }, index: number) => ({
+        id: String(index),
+        timestamp: row.timestamp,
+        tokens: row.tokens_used,
+        preview: row.low_confidence ? 'Low-confidence response' : 'AI response',
+      }),
+    ) ?? [];
 
   return {
     guildId,
@@ -290,6 +324,11 @@ export const useSettings = (): UseSettingsResult => {
     guildError: !!guildError,
     usage,
     usageLoading,
+    usageError: !!usageError,
+    historyLoading,
+    historyError: !!historyError,
+    logsLoading,
+    logsError: !!logsError,
     knowledge,
     knowledgeLoading,
     knowledgeError: !!knowledgeError,

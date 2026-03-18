@@ -11,6 +11,25 @@ export const guildService = {
     return res.data;
   },
 
+  async fetchUsageHistory(guildId: string, days: number): Promise<{ date: string; tokens_used: number }[]> {
+    const res = await api.get<{ date: string; tokens_used: number }[]>(
+      `/guilds/${guildId}/usage/history`,
+      { params: { days } },
+    );
+    return res.data;
+  },
+
+  async fetchUsageLogs(
+    guildId: string,
+    limit: number,
+  ): Promise<{ timestamp: string; tokens_used: number; low_confidence: boolean }[]> {
+    const res = await api.get<{ timestamp: string; tokens_used: number; low_confidence: boolean }[]>(
+      `/guilds/${guildId}/usage/logs`,
+      { params: { limit } },
+    );
+    return res.data;
+  },
+
   async fetchKnowledge(guildId: string): Promise<KnowledgeEntry[]> {
     const res = await api.get<KnowledgeEntry[]>(`/guilds/${guildId}/knowledge`);
     return res.data;
