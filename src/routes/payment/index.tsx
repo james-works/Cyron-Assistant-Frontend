@@ -1,15 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { TopNav } from '../../components/layout/TopNav';
 import { Footer } from '../../components/layout/Footer';
 import { PageTransition } from '../../components/motion/PageTransition';
 import { useAuth } from '../../hooks/useAuth';
 import { useApp } from '../../context/AppContext';
 import { motion } from 'framer-motion';
-import { FaCheck, FaLock, FaCreditCard, FaShieldAlt } from 'react-icons/fa';
+import { FaCheck, FaLock, FaCreditCard, FaShieldAlt, FaServer } from 'react-icons/fa';
 import clsx from 'clsx';
+import { api } from '../../lib/api';
 
 type PlanType = 'pro' | 'business';
+
+async function fetchGuilds(): Promise<Guild[]> {
+  const res = await api.get<Guild[]>('/guilds');
+  return res.data;
+}
 
 const ACCENT: Record<
   PlanType,
@@ -55,8 +62,19 @@ export const Payment = () => {
     email: '',
   });
 
+  const [selectedGuildId, setSelectedGuildId] = useState<string>('');
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const {
+    data: guilds,
+    isLoading: isGuildsLoading,
+    isError: isGuildsError,
+  } = useQuery({
+    queryKey: ['guilds'],
+    queryFn: fetchGuilds,
+  });
 
   // Theme is provided globally by AppProvider.
 
@@ -127,6 +145,10 @@ export const Payment = () => {
       newErrors.email = 'Please enter a valid email address';
     }
 
+    if (!selectedGuildId) {
+      newErrors.guild = 'Please select a server to apply this plan to';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -143,9 +165,11 @@ export const Payment = () => {
     // Simulate API call
     setTimeout(() => {
       setIsProcessing(false);
-      // In a real app, you would call your payment API here
-      // For now, redirect to dashboard with success message
-      navigate('/dashboard?payment=success', { replace: true });
+      // In a real app, you would call your payment API here and include the selectedGuildId.
+      // For now, redirect to dashboard with success message and selected guild for future use.
+      navigate(`/dashboard?payment=success&guildId=${encodeURIComponent(selectedGuildId)}`, {
+        replace: true,
+      });
     }, 2000);
   };
 
@@ -179,9 +203,12 @@ export const Payment = () => {
     return null;
   }
 
+  const selectedGuild =
+    guilds?.find((g) => String(g.id) === selectedGuildId) ?? null;
+
   return (
     <>
-      <TopNav currentGuildName={null} />
+      <TopNav currentGuildName={selectedGuild?.name ?? null} />
       <PageTransition>
         <div
           className={
@@ -242,6 +269,57 @@ export const Payment = () => {
                         {planData?.priceSubLabel ?? ''}
                       </p>
                     </div>
+                  </div>
+
+                  <div className="mt-6 space-y-2 text-sm">
+                    <p className={clsx('font-semibold', headingText)}>Select server</p>
+                    {isGuildsLoading && (
+                      <p className={clsx('flex items-center gap-2 text-xs', bodyText)}>
+                        <FaServer className="text-slate-400" />
+                        Loading your servers…
+                      </p>
+                    )}
+                    {isGuildsError && !isGuildsLoading && (
+                      <p className="text-xs text-red-600">
+                        Failed to load your servers. Please refresh the page.
+                      </p>
+                    )}
+                    {!isGuildsLoading && !isGuildsError && (
+                      <>
+                        <select
+                          value={selectedGuildId}
+                          onChange={(e) => {
+                            setSelectedGuildId(e.target.value);
+                            if (errors.guild) {
+                              setErrors((prev) => ({ ...prev, guild: '' }));
+                            }
+                          }}
+                          className={clsx(
+                            'mt-1 w-full rounded-lg border px-3 py-2 text-sm',
+                            errors.guild
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                              : isDark
+                                ? 'bg-slate-900/60 border-slate-700 text-slate-100'
+                                : 'bg-white border-slate-200 text-slate-900'
+                          )}
+                        >
+                          <option value="">Select a Discord server</option>
+                          {(guilds ?? []).map((g) => (
+                            <option key={g.id} value={String(g.id)}>
+                              {g.name}
+                              {g.has_bot ? '' : ' (bot not installed)'}
+                            </option>
+                          ))}
+                        </select>
+                        {errors.guild && (
+                          <p className="mt-1 text-xs text-red-600">{errors.guild}</p>
+                        )}
+                        <p className={clsx('text-[11px] leading-snug', bodyText)}>
+                          Payments are applied per Discord server. Choose which server this
+                          {plan === 'business' ? ' Business' : ' Pro'} plan should upgrade.
+                        </p>
+                      </>
+                    )}
                   </div>
 
                   <div className="mb-6">

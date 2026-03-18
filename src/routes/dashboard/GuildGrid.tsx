@@ -15,14 +15,14 @@ export const DashboardGuildGrid = ({
   return (
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {guilds.map((guild) => {
-        const active = String(guild.id) === activeGuildId;
+        console.log(guild.name);
         return (
           <div
             key={guild.id}
             className={[
               'group rounded-2xl border bg-white p-5 shadow-sm transition',
               'hover:-translate-y-0.5 hover:shadow-md',
-              active ? 'border-sky-200 ring-2 ring-sky-200/60' : 'border-slate-200',
+              String(guild.id) === activeGuildId ? 'border-sky-200 ring-2 ring-sky-200/60' : 'border-slate-200',
             ].join(' ')}
           >
             <div className="flex items-start justify-between gap-3">
@@ -39,9 +39,14 @@ export const DashboardGuildGrid = ({
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-slate-900 flex items-center gap-1">
-                    {guild.name}{' '}
-                    {active && (
+                  <p
+                    className="truncate max-w-[220px] text-sm font-semibold text-slate-900 flex items-center gap-1"
+                    title={guild.name}
+                  >
+                    {guild.name && guild.name.length > 22
+                      ? `${guild.name.slice(0, 22)}...`
+                      : guild.name}
+                    {String(guild.id) === activeGuildId && (
                       <FaCheckCircle className="ml-2 text-emerald-500 text-xs" />
                     )}
                   </p>
