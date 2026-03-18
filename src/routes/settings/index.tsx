@@ -35,6 +35,11 @@ export const Settings = () => {
     guildError,
     usage,
     usageLoading,
+    usageError,
+    historyLoading,
+    historyError,
+    logsLoading,
+    logsError,
     knowledge,
     knowledgeLoading,
     knowledgeError,
@@ -157,6 +162,11 @@ export const Settings = () => {
             <UsageTab
               usage={usage}
               usageLoading={usageLoading}
+              usageError={usageError}
+              historyLoading={historyLoading}
+              historyError={historyError}
+              logsLoading={logsLoading}
+              logsError={logsError}
               chartData={chartData}
               recentActivity={recentActivity}
             />

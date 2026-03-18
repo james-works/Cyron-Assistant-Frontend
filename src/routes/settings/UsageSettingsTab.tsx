@@ -12,10 +12,23 @@ import {
 import { Loader } from "../../components/ui/Loader";
 
 export const UsageTab = ({
-    usage, usageLoading, chartData, recentActivity,
+    usage,
+    usageLoading,
+    usageError,
+    historyLoading,
+    historyError,
+    logsLoading,
+    logsError,
+    chartData,
+    recentActivity,
 }: {
     usage: any;
     usageLoading: boolean;
+    usageError: boolean;
+    historyLoading: boolean;
+    historyError: boolean;
+    logsLoading: boolean;
+    logsError: boolean;
     chartData: any[];
     recentActivity: any[];
 }) => {
@@ -28,12 +41,17 @@ export const UsageTab = ({
             transition={{ duration: 0.2 }}
             className="space-y-4"
         >
-            {usageLoading && (
+            {(usageLoading || historyLoading || logsLoading) && (
                 <div className="flex items-center gap-2 text-sm text-text-muted">
                     <Loader /> Loading usage…
                 </div>
             )}
-            {usage && !usageLoading && (
+            {(usageError || historyError || logsError) && (
+                <p className="text-sm text-red-500">
+                    Failed to load usage analytics. Please refresh the page.
+                </p>
+            )}
+            {usage && !usageLoading && !usageError && (
                 <>
                     {/* Usage summary (tokens, tickets, sessions) */}
                     <div className="grid gap-4 md:grid-cols-3">
@@ -109,7 +127,9 @@ export const UsageTab = ({
                         className="rounded-xl bg-white p-4 shadow-soft"
                     >
                         <p className="mb-3 text-sm font-semibold text-slate-700">Token usage (last 7 days)</p>
-                        <p className="mb-2 text-xs text-text-muted">Sample distribution - backend can provide real time series later.</p>
+                        <p className="mb-2 text-xs text-text-muted">
+                            Daily token usage aggregated from live usage logs.
+                        </p>
                         <div className="h-48 w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
@@ -147,8 +167,12 @@ export const UsageTab = ({
                         transition={{ delay: 0.25 }}
                         className="rounded-xl bg-white p-4 shadow-soft"
                     >
-                        <p className="mb-3 text-sm font-semibold text-slate-700">Recent activity (last 5 AI calls)</p>
-                        <p className="mb-2 text-xs text-text-muted">Sample data - backend can provide real usage logs later.</p>
+                        <p className="mb-3 text-sm font-semibold text-slate-700">
+                            Recent activity (last 10 AI calls)
+                        </p>
+                        <p className="mb-2 text-xs text-text-muted">
+                            Live data from recent AI responses for this server.
+                        </p>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-xs">
                                 <thead>
