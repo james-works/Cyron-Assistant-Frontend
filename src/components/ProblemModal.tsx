@@ -51,7 +51,7 @@ export const ProblemModal = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 24 }}
             transition={{ duration: 0.2 }}
-            className="mx-4 w-full max-w-md rounded-2xl bg-zinc-900 p-6 shadow-2xl ring-1 ring-zinc-700"
+            className="mx-4 w-full max-w-md rounded-2xl bg-[#020617] p-6 shadow-2xl ring-1 ring-zinc-700"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-5 flex items-start justify-between gap-3">
